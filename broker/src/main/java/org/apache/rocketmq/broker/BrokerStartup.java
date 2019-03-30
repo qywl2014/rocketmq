@@ -68,6 +68,7 @@ public class BrokerStartup {
                 tip += " and name server is " + controller.getBrokerConfig().getNamesrvAddr();
             }
 
+            System.out.println(tip);
             log.info(tip);
             return controller;
         } catch (Throwable e) {
@@ -207,6 +208,7 @@ public class BrokerStartup {
             // remember all configs to prevent discard
             controller.getConfiguration().registerConfig(properties);
 
+            //new 了很多类，包括NettyRemotingServer,borker
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();

@@ -119,6 +119,7 @@ public class NamesrvStartup {
                 }
             }));
 
+            //调用remotingServer的start(),即serverBootstrap初始化并bind()
             controller.start();
 
             String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
