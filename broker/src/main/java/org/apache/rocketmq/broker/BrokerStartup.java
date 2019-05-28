@@ -53,7 +53,7 @@ public class BrokerStartup {
     public static Logger log;
 
     public static void main(String[] args) {
-        start(createBrokerController(args));
+        start(createBrokerController(new String[]{"-n","localhost:9876"}));
     }
 
     public static BrokerController start(BrokerController controller) {
