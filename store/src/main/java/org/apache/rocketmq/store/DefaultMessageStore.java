@@ -118,13 +118,18 @@ public class DefaultMessageStore implements MessageStore {
         this.brokerConfig = brokerConfig;
         this.messageStoreConfig = messageStoreConfig;
         this.brokerStatsManager = brokerStatsManager;
+        // 无限循环对 PriorityBlockingQueue<AllocateRequest> 进行take
         this.allocateMappedFileService = new AllocateMappedFileService(this);
+        // 该类中有MappedFileQueue，里面有MapperFile List
         this.commitLog = new CommitLog(this);
+        // 存ConsumeQueue
         this.consumeQueueTable = new ConcurrentHashMap<>(32);
 
+        // 定时调用当前类中的consumeQueueTable中所有的ConsumeQueue的flush方法
         this.flushConsumeQueueService = new FlushConsumeQueueService();
         this.cleanCommitLogService = new CleanCommitLogService();
         this.cleanConsumeQueueService = new CleanConsumeQueueService();
+        // stats:统计
         this.storeStatsService = new StoreStatsService();
         this.indexService = new IndexService(this);
         this.haService = new HAService(this);

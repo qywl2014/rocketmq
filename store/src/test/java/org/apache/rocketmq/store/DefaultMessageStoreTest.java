@@ -21,7 +21,10 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.OverlappingFileLockException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,8 +51,8 @@ public class DefaultMessageStoreTest {
 
     @Before
     public void init() throws Exception {
-        StoreHost = new InetSocketAddress(InetAddress.getLocalHost(), 8123);
-        BornHost = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0);
+        StoreHost = new InetSocketAddress(InetAddress.getLocalHost(), 8124);
+        BornHost = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8125);
 
         messageStore = buildMessageStore();
         boolean load = messageStore.load();
@@ -85,11 +88,11 @@ public class DefaultMessageStoreTest {
     @After
     public void destory() {
         messageStore.shutdown();
-        messageStore.destroy();
-
-        MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
-        File file = new File(messageStoreConfig.getStorePathRootDir());
-        UtilAll.deleteFile(file);
+//        messageStore.destroy();
+//
+//        MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
+//        File file = new File(messageStoreConfig.getStorePathRootDir());
+//        UtilAll.deleteFile(file);
     }
 
     public MessageStore buildMessageStore() throws Exception {
@@ -104,7 +107,7 @@ public class DefaultMessageStoreTest {
 
     @Test
     public void testWriteAndRead() throws Exception {
-        long totalMsgs = 100;
+        long totalMsgs = 5;
         QUEUE_TOTAL = 1;
         MessageBody = StoreMessage.getBytes();
         for (long i = 0; i < totalMsgs; i++) {
@@ -117,6 +120,32 @@ public class DefaultMessageStoreTest {
             result.release();
         }
         verifyThatMasterIsFunctional(totalMsgs, messageStore);
+    }
+
+    @Test
+    public void putMessage() throws Exception{
+        MessageExtBrokerInner msg = new MessageExtBrokerInner();
+        msg.setTopic("TT11");
+        msg.setTags("TAG1");
+        msg.setKeys("Hello");
+        msg.setBody("1122aabbccabc".getBytes());
+        msg.setKeys(String.valueOf(System.currentTimeMillis()));
+        msg.setQueueId(0);
+        msg.setSysFlag(0);
+        msg.setBornTimestamp(System.currentTimeMillis());
+        msg.setStoreHost(StoreHost);
+        msg.setBornHost(BornHost);
+        messageStore.putMessage(msg);
+    }
+
+    @Test
+    public void getMessage(){
+        GetMessageResult result = messageStore.getMessage("GROUP_A", "TT11", 0, 0, 1024 * 1024, null);
+        List<ByteBuffer> list = result.getMessageBufferList();
+        ByteBuffer byteBuffer = list.get(0);
+        byteBuffer.flip();
+        System.out.println(byteBuffer.array().length);
+//        byte[] bytes = Arrays.copyOfRange(byteBuffer.array(),0,)
     }
 
     public MessageExtBrokerInner buildMessage() {

@@ -17,10 +17,7 @@
 package org.apache.rocketmq.store;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.common.ServiceThread;
@@ -38,6 +35,8 @@ import org.apache.rocketmq.store.ha.HAService;
 import org.apache.rocketmq.store.schedule.ScheduleMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Store all metadata downtime for recovery, data protection reliability
@@ -576,6 +575,7 @@ public class CommitLog {
                 return new PutMessageResult(PutMessageStatus.CREATE_MAPEDFILE_FAILED, null);
             }
 
+            // 将消息写入mapperFile的buffer里
             result = mappedFile.appendMessage(msg, this.appendMessageCallback);
             switch (result.getStatus()) {
                 case PUT_OK:
@@ -889,6 +889,7 @@ public class CommitLog {
         protected static final int RETRY_TIMES_OVER = 10;
     }
 
+    // 	异步刷盘 && 开启内存字节缓冲区
     class CommitRealTimeService extends FlushCommitLogService {
 
         private long lastCommitTimestamp = 0;
@@ -942,6 +943,7 @@ public class CommitLog {
         }
     }
 
+    // 	异步刷盘 && 关闭内存字节缓冲区
     class FlushRealTimeService extends FlushCommitLogService {
         private long lastFlushTimestamp = 0;
         private long printTimes = 0;
@@ -1052,6 +1054,7 @@ public class CommitLog {
         }
     }
 
+    // 同步刷盘
     /**
      * GroupCommit Service
      */
@@ -1303,6 +1306,10 @@ public class CommitLog {
             final long beginTimeMills = CommitLog.this.defaultMessageStore.now();
             // Write messages to the queue buffer
             byteBuffer.put(this.msgStoreItemMemory.array(), 0, msgLen);
+            byte[] bytes = Arrays.copyOfRange(this.msgStoreItemMemory.array(),0,200);
+            System.out.println("---");
+            System.out.println(DatatypeConverter.printHexBinary(bytes));
+            System.out.println("---");
 
             AppendMessageResult result = new AppendMessageResult(AppendMessageStatus.PUT_OK, wroteOffset, msgLen, msgId,
                 msgInner.getStoreTimestamp(), queueOffset, CommitLog.this.defaultMessageStore.now() - beginTimeMills);
