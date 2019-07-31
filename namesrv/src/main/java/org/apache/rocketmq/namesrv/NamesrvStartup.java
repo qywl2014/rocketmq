@@ -38,6 +38,7 @@ import org.apache.rocketmq.srvutil.ShutdownHookThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//需要设置ROCKETMQ_HOME环境变量 值为rocketmq目录
 public class NamesrvStartup {
     public static Properties properties = null;
     public static CommandLine commandLine = null;

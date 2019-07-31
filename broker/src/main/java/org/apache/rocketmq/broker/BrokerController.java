@@ -147,9 +147,13 @@ public class BrokerController {
         this.nettyServerConfig = nettyServerConfig;
         this.nettyClientConfig = nettyClientConfig;
         this.messageStoreConfig = messageStoreConfig;
+        // load 加载josn文件中消费者的offset信息到该类中 persist存储该类中的信息到文件
         this.consumerOffsetManager = new ConsumerOffsetManager(this);
+        // load 加载json文件中topic信息 persist...
         this.topicConfigManager = new TopicConfigManager(this);
+        // 请求处理器
         this.pullMessageProcessor = new PullMessageProcessor(this);
+        // 每秒或者每5秒或者直接wakeup处理该类中保存的所有拉请求，似乎即通知消费者新消息到达
         this.pullRequestHoldService = new PullRequestHoldService(this);
         this.messageArrivingListener = new NotifyMessageArrivingListener(this.pullRequestHoldService);
         this.consumerIdsChangeListener = new DefaultConsumerIdsChangeListener(this);
@@ -267,6 +271,7 @@ public class BrokerController {
                 Executors.newFixedThreadPool(this.brokerConfig.getConsumerManageThreadPoolNums(), new ThreadFactoryImpl(
                     "ConsumerManageThread_"));
 
+            // 注册请求处理器
             this.registerProcessor();
 
             final long initialDelay = UtilAll.computNextMorningTimeMillis() - System.currentTimeMillis();
