@@ -129,25 +129,25 @@ public class ConsumerManageProcessor implements NettyRequestProcessor {
             this.brokerController.getConsumerOffsetManager().queryOffset(
                 requestHeader.getConsumerGroup(), requestHeader.getTopic(), requestHeader.getQueueId());
 
-//        if (offset >= 0) {
+        if (offset >= 0) {
             responseHeader.setOffset(offset);
             response.setCode(ResponseCode.SUCCESS);
             response.setRemark(null);
-//        } else {
-//            long minOffset =
-//                this.brokerController.getMessageStore().getMinOffsetInQueue(requestHeader.getTopic(),
-//                    requestHeader.getQueueId());
-//            if (minOffset <= 0
-//                && !this.brokerController.getMessageStore().checkInDiskByConsumeOffset(
-//                requestHeader.getTopic(), requestHeader.getQueueId(), 0)) {
-//                responseHeader.setOffset(0L);
-//                response.setCode(ResponseCode.SUCCESS);
-//                response.setRemark(null);
-//            } else {
-//                response.setCode(ResponseCode.QUERY_NOT_FOUND);
-//                response.setRemark("Not found, V3_0_6_SNAPSHOT maybe this group consumer boot first");
-//            }
-//        }
+        } else {
+            long minOffset =
+                this.brokerController.getMessageStore().getMinOffsetInQueue(requestHeader.getTopic(),
+                    requestHeader.getQueueId());
+            if (minOffset <= 0
+                && !this.brokerController.getMessageStore().checkInDiskByConsumeOffset(
+                requestHeader.getTopic(), requestHeader.getQueueId(), 0)) {
+                responseHeader.setOffset(0L);
+                response.setCode(ResponseCode.SUCCESS);
+                response.setRemark(null);
+            } else {
+                response.setCode(ResponseCode.QUERY_NOT_FOUND);
+                response.setRemark("Not found, V3_0_6_SNAPSHOT maybe this group consumer boot first");
+            }
+        }
 
         return response;
     }
