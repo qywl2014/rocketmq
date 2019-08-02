@@ -155,17 +155,27 @@ public class BrokerController {
         this.pullMessageProcessor = new PullMessageProcessor(this);
         // 每秒或者每5秒或者直接wakeup处理该类中保存的所有拉请求，似乎即通知消费者新消息到达
         this.pullRequestHoldService = new PullRequestHoldService(this);
+        // 监听器 传给两个消息存储相关类
         this.messageArrivingListener = new NotifyMessageArrivingListener(this.pullRequestHoldService);
         this.consumerIdsChangeListener = new DefaultConsumerIdsChangeListener(this);
+        // 管理消费者
         this.consumerManager = new ConsumerManager(this.consumerIdsChangeListener);
+        // load
         this.consumerFilterManager = new ConsumerFilterManager(this);
+        // 管理生产者
         this.producerManager = new ProducerManager();
+        // 每10秒移除consumerManager、producerManager、filterServerManager不活跃的channel
         this.clientHousekeepingService = new ClientHousekeepingService(this);
+        // 未知
         this.broker2Client = new Broker2Client(this);
+        // load configManager配置管理
         this.subscriptionGroupManager = new SubscriptionGroupManager(this);
+        // netty客户端
         this.brokerOuterAPI = new BrokerOuterAPI(nettyClientConfig);
+        // 未知
         this.filterServerManager = new FilterServerManager(this);
 
+        // 同步master的四个配置管理配置
         this.slaveSynchronize = new SlaveSynchronize(this);
 
         this.sendThreadPoolQueue = new LinkedBlockingQueue<Runnable>(this.brokerConfig.getSendThreadPoolQueueCapacity());

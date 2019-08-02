@@ -129,6 +129,7 @@ public class MQClientInstance {
         this.nettyClientConfig.setClientCallbackExecutorThreads(clientConfig.getClientCallbackExecutorThreads());
         this.nettyClientConfig.setUseTLS(clientConfig.isUseTLS());
         this.clientRemotingProcessor = new ClientRemotingProcessor(this);
+        // 持有NettyRemotingClient
         this.mQClientAPIImpl = new MQClientAPIImpl(this.nettyClientConfig, this.clientRemotingProcessor, rpcHook, clientConfig);
 
         if (this.clientConfig.getNamesrvAddr() != null) {
@@ -140,10 +141,13 @@ public class MQClientInstance {
 
         this.mQAdminImpl = new MQAdminImpl(this);
 
+        // 无限循环take pullRequestQueue 执行拉请求 应该是consumer用的 调用的是consumerTable中consumer的pullMessage
         this.pullMessageService = new PullMessageService(this);
 
+        // 每20秒或者直接通知调用当前类的 doRebalance() -> 调用consumerTable中所有consumer的doRebalance
         this.rebalanceService = new RebalanceService(this);
 
+        // 内部producer
         this.defaultMQProducer = new DefaultMQProducer(MixAll.CLIENT_INNER_PRODUCER_GROUP);
         this.defaultMQProducer.resetClientConfig(clientConfig);
 
@@ -231,14 +235,17 @@ public class MQClientInstance {
                         this.mQClientAPIImpl.fetchNameServerAddr();
                     }
                     // Start request-response channel
+                    // 启动NettyRemotingClient
                     this.mQClientAPIImpl.start();
                     // Start various schedule tasks
+                    // 未知 待考察
                     this.startScheduledTask();
                     // Start pull service
                     this.pullMessageService.start();
                     // Start rebalance service
                     this.rebalanceService.start();
                     // Start push service
+                    // 启动内部producer,启动时不启动mQClientFactory,不然会无限嵌套
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);
                     log.info("the client factory [{}] start OK", this.clientId);
                     this.serviceState = ServiceState.RUNNING;
