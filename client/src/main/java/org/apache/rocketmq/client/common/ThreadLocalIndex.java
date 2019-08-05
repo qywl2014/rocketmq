@@ -32,7 +32,7 @@ public class ThreadLocalIndex {
             this.threadLocalIndex.set(index);
         }
 
-        index = Math.abs(index + 1);
+        index = Math.abs(index + 1);//防止溢出吗
         if (index < 0)
             index = 0;
 

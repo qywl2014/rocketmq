@@ -192,9 +192,9 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                                 new HandshakeHandler(TlsSystemConfig.tlsMode))
                             .addLast(defaultEventExecutorGroup,
                                 new NettyEncoder(),
-                                new NettyDecoder(),
+                                new NettyDecoder(),//入站
                                 new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),
-                                new NettyConnectManageHandler(),
+                                new NettyConnectManageHandler(),//这个好像没在消息收发上做处理
                                 new NettyServerHandler()
                             );
                     }
@@ -390,7 +390,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, RemotingCommand msg) throws Exception {
-            processMessageReceived(ctx, msg);
+            processMessageReceived(ctx, msg);//内部类 依赖于外部类
         }
     }
 

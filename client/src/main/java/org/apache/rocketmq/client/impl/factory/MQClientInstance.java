@@ -621,6 +621,7 @@ public class MQClientInstance {
                         }
 
                         if (changed) {
+                            // TODO 为什么要重新写克隆方法
                             TopicRouteData cloneTopicRouteData = topicRouteData.cloneTopicRouteData();
 
                             for (BrokerData bd : topicRouteData.getBrokerDatas()) {
