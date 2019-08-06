@@ -558,10 +558,10 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
                 this.checkConfig();
 
-                this.copySubscription();
+                this.copySubscription();//对于默认的集群方式的消费者要增加一个subscriptionData信息 topic为%RETRY%groupName存到map中
 
                 if (this.defaultMQPushConsumer.getMessageModel() == MessageModel.CLUSTERING) {
-                    this.defaultMQPushConsumer.changeInstanceNameToPID();
+                    this.defaultMQPushConsumer.changeInstanceNameToPID();// 应该是为了集群模式下instance名字不一样，但还是可能一样啊 pid
                 }
 
                 this.mQClientFactory = MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQPushConsumer, this.rpcHook);
@@ -591,7 +591,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     }
                     this.defaultMQPushConsumer.setOffsetStore(this.offsetStore);
                 }
-                this.offsetStore.load();
+                this.offsetStore.load();//如果是广播模式则加载本地文件存储的消费offset
 
                 if (this.getMessageListenerInner() instanceof MessageListenerOrderly) {
                     this.consumeOrderly = true;
@@ -859,6 +859,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
     public void subscribe(String topic, String subExpression) throws MQClientException {
         try {
+            // subscriptionData存入consumerGroup topic tags信息，并对tags拆分处理
             SubscriptionData subscriptionData = FilterAPI.buildSubscriptionData(this.defaultMQPushConsumer.getConsumerGroup(),
                 topic, subExpression);
             this.rebalanceImpl.getSubscriptionInner().put(topic, subscriptionData);
