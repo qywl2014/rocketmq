@@ -603,8 +603,8 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                         new ConsumeMessageConcurrentlyService(this, (MessageListenerConcurrently) this.getMessageListenerInner());
                 }
 
-                this.consumeMessageService.start();
-
+                this.consumeMessageService.start();//cleanExpireMsg 15分钟执行一次好像是，反正是分钟级别的
+                // put 到mQClientFactory的consumerTable
                 boolean registerOK = mQClientFactory.registerConsumer(this.defaultMQPushConsumer.getConsumerGroup(), this);
                 if (!registerOK) {
                     this.serviceState = ServiceState.CREATE_JUST;

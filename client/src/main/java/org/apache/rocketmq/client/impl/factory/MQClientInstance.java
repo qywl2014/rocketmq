@@ -242,7 +242,7 @@ public class MQClientInstance {
                     this.startScheduledTask();
                     // Start pull service
                     this.pullMessageService.start();
-                    // Start rebalance service
+                    // Start rebalance service 有东西
                     this.rebalanceService.start();
                     // Start push service
                     // 启动内部producer,启动时不启动mQClientFactory,不然会无限嵌套
@@ -295,7 +295,7 @@ public class MQClientInstance {
             public void run() {
                 try {
                     MQClientInstance.this.cleanOfflineBroker();
-                    MQClientInstance.this.sendHeartbeatToAllBrokerWithLock();
+                    MQClientInstance.this.sendHeartbeatToAllBrokerWithLock();//向所有broker发送心跳请求并保存返回的版本信息
                 } catch (Exception e) {
                     log.error("ScheduledTask sendHeartbeatToAllBroker exception", e);
                 }

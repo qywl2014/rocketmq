@@ -35,6 +35,7 @@ public class PullConsumerTest {
             long offset = 26;
 
             long beginTime = System.currentTimeMillis();
+            // 这里的block用了countDownLatch的await nettyClient收到response后会调用countDown
             PullResult pullResult = consumer.pullBlockIfNotFound(mq, null, offset, 32);
             System.out.printf("%s%n", System.currentTimeMillis() - beginTime);
             System.out.printf("%s%n", pullResult);
