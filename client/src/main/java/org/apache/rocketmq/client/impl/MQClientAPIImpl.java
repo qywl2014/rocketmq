@@ -320,7 +320,7 @@ public class MQClientAPIImpl {
             request = RemotingCommand.createRequestCommand(RequestCode.SEND_MESSAGE, requestHeader);
         }
 
-        request.setBody(msg.getBody());
+        request.setBody(msg.getBody());//关键 将消息内容存到RemotingCommand中
 
         switch (communicationMode) {
             case ONEWAY:
