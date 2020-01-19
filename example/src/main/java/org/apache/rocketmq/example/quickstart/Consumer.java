@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.example.quickstart;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -32,44 +33,27 @@ public class Consumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
 
-        /*
-         * Instantiate with specified consumer group name.
-         */
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("consumer-example");
-
         consumer.setNamesrvAddr("127.0.0.1:9876");
-
-        /*
-         * Specify where to start in case the specified consumer group is a brand new one.
-         */
-        consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
-
-        /*
-         * Subscribe one more more topics to consume.
-         * 保存 subscriptionData 到 defaultMQPushConsumerImpl 的 rebalanceImpl 的 map 中
-         */
-//        consumer.subscribe("TopicTest", "*");
-        consumer.subscribe("wulang-1", "*");
+        consumer.subscribe("TopicTest", "*");
 
         /*
          *  Register callback to execute on arrival of messages fetched from brokers.
          *  保存 messageListener 到 defaultMQPushConsumer 和 defaultMQPushConsumerImpl 中
          */
         consumer.registerMessageListener(new MessageListenerConcurrently() {
-
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt>/*melot的封装就for循环list调用processor*/ msgs,
                 ConsumeConcurrentlyContext context) {
-                System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), msgs);
+                System.out.println("...size = "+msgs.size());
+                for (MessageExt msg : msgs) {
+                    System.out.println(new String(msg.getBody(), StandardCharsets.UTF_8));
+                }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
 
-        /*
-         *  Launch the consumer instance.
-         */
         consumer.start();
-
         System.out.printf("Consumer Started.%n");
     }
 }
