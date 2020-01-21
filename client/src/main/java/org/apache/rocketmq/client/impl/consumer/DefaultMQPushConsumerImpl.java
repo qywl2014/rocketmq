@@ -222,6 +222,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         long cachedMessageCount = processQueue.getMsgCount().get();
         long cachedMessageSizeInMiB = processQueue.getMsgSize().get() / (1024 * 1024);
 
+        System.out.println(Thread.currentThread()+"****cachedMessageCount="+cachedMessageCount+"PullThresholdForQueue="+this.defaultMQPushConsumer.getPullThresholdForQueue());
         if (cachedMessageCount > this.defaultMQPushConsumer.getPullThresholdForQueue()) {
             this.executePullRequestLater(pullRequest, PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL);
             if ((queueFlowControlTimes++ % 1000) == 0) {
@@ -614,6 +615,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                         null);
                 }
 
+                // 关键 不断不断拉消息从这里开始
                 mQClientFactory.start();
                 log.info("the consumer [{}] start OK.", this.defaultMQPushConsumer.getConsumerGroup());
                 this.serviceState = ServiceState.RUNNING;
@@ -629,9 +631,11 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 break;
         }
 
+        // 不知道和前面mQClientFactory里的定时任务谁先执行,挺关键，获取MessageQueue存到RebalanceImpl的map中
         this.updateTopicSubscribeInfoWhenSubscriptionChanged();
         this.mQClientFactory.checkClientInBroker();
         this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
+        // 让rebalance不用再等待默认的20秒才开始 实际上只要Rebalance线程启动就行，consumer启动时，会受到消息调用该方法，使得rebalance不用等待
         this.mQClientFactory.rebalanceImmediately();
     }
 

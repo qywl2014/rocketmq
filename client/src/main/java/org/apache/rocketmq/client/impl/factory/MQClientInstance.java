@@ -238,11 +238,11 @@ public class MQClientInstance {
                     // 启动NettyRemotingClient
                     this.mQClientAPIImpl.start();
                     // Start various schedule tasks
-                    // 未知 待考察
+                    // 好像里面的心跳定时任务会受到broker的请求消息，使得RebalanceService直接启动即可开始不断拉消息，太搞了，还有个定时任务很关键，获取队列信息
                     this.startScheduledTask();
                     // Start pull service
                     this.pullMessageService.start();
-                    // Start rebalance service 有东西
+                    // 关键 不断不断拉消息从这个线程开始
                     this.rebalanceService.start();
                     // Start push service
                     // 启动内部producer,启动时不启动mQClientFactory,不然会无限嵌套
@@ -277,6 +277,7 @@ public class MQClientInstance {
             }, 1000 * 10, 1000 * 60 * 2, TimeUnit.MILLISECONDS);
         }
 
+        // 关键 获取队列信息，存到RebalanceImpl里的MessageQueue map中，第一次可能会被DefaultMQPushConsumerImpl.start()里的先执行
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -289,6 +290,7 @@ public class MQClientInstance {
             }
         }, 10, this.clientConfig.getPollNameServerInterval(), TimeUnit.MILLISECONDS);
 
+        //这个任务运行了以后，可以直接 在RebalanceService线程启动后，开始Rebalance，不用等待
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -650,6 +652,7 @@ public class MQClientInstance {
                                     Entry<String, MQConsumerInner> entry = it.next();
                                     MQConsumerInner impl = entry.getValue();
                                     if (impl != null) {
+                                        // 关键 将Set<MessageQueue>存到rebalanceImpl的map中
                                         impl.updateTopicSubscribeInfo(topic, subscribeInfo);
                                     }
                                 }
@@ -952,6 +955,7 @@ public class MQClientInstance {
     }
 
     public void rebalanceImmediately() {
+        System.out.println("----wake up rabalance");
         this.rebalanceService.wakeup();
     }
 

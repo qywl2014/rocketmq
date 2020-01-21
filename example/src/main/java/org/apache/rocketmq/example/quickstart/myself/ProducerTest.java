@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.example.quickstart;
+package org.apache.rocketmq.example.quickstart.myself;
 
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -25,7 +25,7 @@ import org.apache.rocketmq.remoting.common.RemotingHelper;
 /**
  * This class demonstrates how to send messages to brokers using provided {@link DefaultMQProducer}.
  */
-public class Producer {
+public class ProducerTest {
     public static void main(String[] args) throws MQClientException, InterruptedException {
 
         DefaultMQProducer producer = new DefaultMQProducer("producer-example");
@@ -35,13 +35,13 @@ public class Producer {
         producer.start();
         for (int i = 0; i < 1000; i++) {
             try {
-                Message msg = new Message("TopicTest2020-1-21-1",
+                Thread.sleep(1000);
+                Message msg = new Message("TopicTest2020-1-21",
                     "TagA" ,
-                    ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET)
+                    ("Hello" + i).getBytes(RemotingHelper.DEFAULT_CHARSET)
                 );
                 SendResult sendResult = producer.send(msg);
                 System.out.printf("%s%n", sendResult);
-                Thread.sleep(1000);
             } catch (Exception e) {
                 e.printStackTrace();
             }

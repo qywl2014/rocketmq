@@ -14,29 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.example.quickstart;
+package org.apache.rocketmq.example.quickstart.myself;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.common.message.MessageExt;
+
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * This example shows how to subscribe and consume messages using providing {@link DefaultMQPushConsumer}.
  */
-public class Consumer {
+public class ConsumerTest {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
 
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("consumer-example");
+        final DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("consumer-example");
         consumer.setNamesrvAddr("127.0.0.1:9876");
-        //在rebalanceImpl中的subscriptionInner map中加入订阅信息(topic->SubscriptionData) 然后在rebalance的时候有用，从而开启不断不断拉消息
-        consumer.subscribe("TopicTest2020-1-21-1", "*");
+        consumer.subscribe("TopicTest2020-1-21", "*");
+        consumer.setConsumeThreadMin(1);
+        consumer.setConsumeThreadMax(1);
+        consumer.setPullThresholdForQueue(1);
 
         /*
          *  Register callback to execute on arrival of messages fetched from brokers.
@@ -46,9 +51,22 @@ public class Consumer {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt>/*melot的封装就for循环list调用processor*/ msgs,
                 ConsumeConcurrentlyContext context) {
-                System.out.println("...size = "+msgs.size());
+                System.out.println("----------------------------------------------");
+                System.out.println("size = "+msgs.size());
                 for (MessageExt msg : msgs) {
-                    System.out.println(new String(msg.getBody(), StandardCharsets.UTF_8));
+                    System.out.println("msg = "+new String(msg.getBody(), StandardCharsets.UTF_8));
+                }
+
+                ConsumeMessageConcurrentlyService consumeMessageConcurrentlyService = (ConsumeMessageConcurrentlyService)consumer.getDefaultMQPushConsumerImpl().getConsumeMessageService();
+                try {
+                    Field field = ConsumeMessageConcurrentlyService.class.getDeclaredField("consumeExecutor");
+                    field.setAccessible(true);
+                    ThreadPoolExecutor threadPoolExecutor=(ThreadPoolExecutor)field.get(consumeMessageConcurrentlyService);
+                    System.out.println("consumeExecutor size = "+threadPoolExecutor.getQueue().size());
+
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
