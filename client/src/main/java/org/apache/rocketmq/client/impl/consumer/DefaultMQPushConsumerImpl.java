@@ -565,6 +565,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     this.defaultMQPushConsumer.changeInstanceNameToPID();// 应该是为了集群模式下instance名字不一样，但还是可能一样啊 pid
                 }
 
+                //封装对 Namesrv，Broker 的 API调用，提供给 Producer、Consumer 使用
                 this.mQClientFactory = MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQPushConsumer, this.rpcHook);
 
                 this.rebalanceImpl.setConsumerGroup(this.defaultMQPushConsumer.getConsumerGroup());

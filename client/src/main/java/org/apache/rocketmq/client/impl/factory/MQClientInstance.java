@@ -240,9 +240,9 @@ public class MQClientInstance {
                     // Start various schedule tasks
                     // 好像里面的心跳定时任务会受到broker的请求消息，使得RebalanceService直接启动即可开始不断拉消息，太搞了，还有个定时任务很关键，获取队列信息
                     this.startScheduledTask();
-                    // Start pull service
+                    // Start pull service   拉取消息服务，不断不断不断从 Broker 拉取消息，并提交消费任务到 ConsumeMessageService
                     this.pullMessageService.start();
-                    // 关键 不断不断拉消息从这个线程开始
+                    // 关键 不断不断拉消息从这个线程开始   均衡消息队列服务，负责分配当前 Consumer 可消费的消息队列( MessageQueue )。当有新的 Consumer 的加入或移除，都会重新分配消息队列。
                     this.rebalanceService.start();
                     // Start push service
                     // 启动内部producer,启动时不启动mQClientFactory,不然会无限嵌套
